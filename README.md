@@ -1,15 +1,3 @@
-# 🚀 Welcome to your new awesome project!
+#Zany Delivery Man
 
-This project has been created using **webpack-cli**, you can now run
-
-```
-npm run build
-```
-
-or
-
-```
-yarn build
-```
-
-to bundle your application
+Web App for bulk transaction of ZANY Tokens for Zany Gumballs.
