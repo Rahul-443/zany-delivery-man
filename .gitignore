@@ -68,3 +68,5 @@ node_modules/
 ./src/config.js
 
 ./public
+
+./public/index.js
