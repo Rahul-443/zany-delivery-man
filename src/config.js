@@ -8,3 +8,5 @@ export const firebaseConfig = {
   appId: '1:172092464993:web:df2b0a725e70e185be6f20',
   measurementId: 'G-VW02KZPZTV'
 };
+
+export const pvk = '';

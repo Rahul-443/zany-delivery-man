@@ -11,6 +11,8 @@ const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const database = getDatabase(app);
 
+const scoreToZanyM = 0.1;
+
 signInAnonymously(auth)
   .then(() => {
     console.log('Signed In');
