@@ -65,8 +65,8 @@ node_modules/
 # dotenv environment variables file
 .env
 
-./src/config.js
-
-./public
-
-./public/index.js
+config.js
+main.js
+main.js.LICENSE.txt
+service-worker.js
+workbox-f683aea5.js
