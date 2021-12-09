@@ -1,5 +1,14 @@
 {
   "projects": {
     "default": "zany-gumballs"
+  },
+  "targets": {
+    "zany-gumballs": {
+      "hosting": {
+        "zany-delivery": [
+          "zany-delivery-man"
+        ]
+      }
+    }
   }
 }

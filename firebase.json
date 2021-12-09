@@ -4,10 +4,7 @@
   },
   "hosting": {
     "public": "public",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ]
+    "target": "zany-delivery",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
   }
 }

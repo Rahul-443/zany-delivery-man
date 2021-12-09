@@ -2,6 +2,7 @@
 
 const path = require('path');
 const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
+const webpack = require('webpack');
 
 const isProduction = process.env.NODE_ENV == 'production';
 
@@ -15,6 +16,12 @@ const config = {
   plugins: [
     // Add your plugins here
     // Learn more about plugins from https://webpack.js.org/configuration/plugins/
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer']
+    }),
+    new webpack.ProvidePlugin({
+      process: 'process/browser'
+    })
   ],
   module: {
     rules: [
@@ -34,6 +41,18 @@ const config = {
       // Add your rules for custom modules here
       // Learn more about loaders from https://webpack.js.org/loaders/
     ]
+  },
+  resolve: {
+    extensions: ['.ts', '.js'],
+    fallback: {
+      stream: require.resolve('stream-browserify'),
+      buffer: require.resolve('buffer')
+    },
+    alias: {
+      buffer: 'buffer',
+      stream: 'stream-browserify',
+      process: 'process/browser'
+    }
   }
 };
 
