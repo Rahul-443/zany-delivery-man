@@ -18,9 +18,6 @@ const config = {
     // Learn more about plugins from https://webpack.js.org/configuration/plugins/
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer']
-    }),
-    new webpack.ProvidePlugin({
-      process: 'process/browser'
     })
   ],
   module: {
@@ -45,13 +42,7 @@ const config = {
   resolve: {
     extensions: ['.ts', '.js'],
     fallback: {
-      stream: require.resolve('stream-browserify'),
       buffer: require.resolve('buffer')
-    },
-    alias: {
-      buffer: 'buffer',
-      stream: 'stream-browserify',
-      process: 'process/browser'
     }
   }
 };

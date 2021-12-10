@@ -17,16 +17,21 @@ const rpc = new JsonRpc('https://wax.greymass.com', { fetch });
 const api = new Api({ rpc, signatureProvider });
 
 const secMain = document.querySelector('.section-main');
-const btnSend = document.querySelector('.send');
+const btnSend = document.getElementById('send');
+const btnRetry = document.getElementById('retry');
 let failedTrxList = [];
 
 const scoreToZanyM = 0.1;
 let userAddresses;
 let usersData;
+let trials = 0;
+
+btnSend.disabled = true;
 
 signInAnonymously(auth)
   .then(() => {
     console.log('Signed In');
+    btnSend.disabled = false;
     onValue(
       ref(database),
       snapshot => {
@@ -49,91 +54,72 @@ function transactAllUsers() {
     if (failedTrxList.length === 0) {
       userAddresses = Object.keys(usersData);
     }
-    console.log('userAddresses', userAddresses);
-
     userAddresses.forEach(userAddress => {
       let userName = userAddress.replace(/\_/g, '.');
-      console.log('username', userName);
-      let amt = (usersData[userAddress]['score'] * scoreToZanyM)
-        .toFixed(4)
-        .toString();
-      console.log('amt', amt);
-      secMain.textContent = `Rewarding ${userName} with ${amt} Zany`;
-      try {
-        (async () => {
-          const result = await api.transact(
-            {
-              actions: [
-                {
-                  account: 'metatoken.gm',
-                  name: 'transfer',
-                  authorization: [
-                    {
-                      actor: 'zanygumplays',
-                      permission: 'active'
+      let score = usersData[userAddress]['high_score'];
+      if (score > 0) {
+        let amt = (score * scoreToZanyM).toFixed(4).toString();
+        try {
+          (async () => {
+            const result = await api.transact(
+              {
+                actions: [
+                  {
+                    account: 'metatoken.gm',
+                    name: 'transfer',
+                    authorization: [
+                      {
+                        actor: 'zanygumplays',
+                        permission: 'active'
+                      }
+                    ],
+                    data: {
+                      from: 'zanygumplays',
+                      to: userName,
+                      quantity: `${amt} ZANY`,
+                      memo: 'Thanks for Coming by'
                     }
-                  ],
-                  data: {
-                    from: 'zanygumplays',
-                    to: userName,
-                    quantity: `${amt} ZANY`,
-                    memo: 'Thanks for Coming by'
                   }
-                }
-              ]
-            },
-            {
-              blocksBehind: 3,
-              expireSeconds: 30
-            }
-          );
-          console.log(result);
-        })();
-      } catch (error) {
-        failedTrxList.push(userAddress);
-        console.log(`Caught Exception ${error}`);
-        if (error instanceof RpcError) {
-          console.log(JSON.stringify(error, null, 2));
+                ]
+              },
+              {
+                blocksBehind: 3,
+                expireSeconds: 30
+              }
+            );
+            secMain.textContent += `\nRewarded ${userName} with ${amt} ZANY`;
+            console.log(result);
+          })();
+        } catch (error) {
+          if (!failedTrxList.includes(userAddress)) {
+            failedTrxList.push(userAddress);
+          }
+          console.log(`Caught Exception ${error}`);
+          if (error instanceof RpcError) {
+            console.log(JSON.stringify(error, null, 2));
+          }
         }
       }
     });
-    if (failedTrxList.length !== 0) {
-      userAddresses = failedTrxList;
-      transactAllUsers();
+    if (trials < 5) {
+      secMain.textContent += `\nWaiting for 10 minutes to cool down`;
+      setTimeout(() => {
+        if (failedTrxList.length !== 0) {
+          userAddresses = [];
+          userAddresses.push(...failedTrxList);
+          transactAllUsers();
+        }
+      }, 10 * 60 * 1000);
+      trials++;
+    } else {
+      secMain.textContent += `\nStopped transactions. Transactions failed for:\n`;
+      failedTrxList.forEach(user => {
+        secMain.textContent += `\n${user}`;
+      });
+      localStorage.setItem('FailedTrxList', JSON.stringify(failedTrxList));
     }
   }
 }
 
-function transact() {
-  (async () => {
-    const result = await api.transact(
-      {
-        actions: [
-          {
-            account: 'eosio.token',
-            name: 'transfer',
-            authorization: [
-              {
-                actor: 'zanygumplays',
-                permission: 'active'
-              }
-            ],
-            data: {
-              from: 'zanygumplays',
-              to: 'rweue.wam',
-              quantity: `0.00000000 WAX`,
-              memo: 'Thanks for Coming by'
-            }
-          }
-        ]
-      },
-      {
-        blocksBehind: 3,
-        expireSeconds: 30
-      }
-    );
-    console.log(result);
-  })();
-}
-
-btnSend.addEventListener('click', transact);
+btnSend.addEventListener('click', transactAllUsers);
+btnRetry.addEventListener('click', transactAllUsers);
