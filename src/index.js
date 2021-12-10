@@ -54,72 +54,67 @@ function transactAllUsers() {
     if (failedTrxList.length === 0) {
       userAddresses = Object.keys(usersData);
     }
-    userAddresses.forEach(userAddress => {
-      let userName = userAddress.replace(/\_/g, '.');
-      let score = usersData[userAddress]['high_score'];
-      if (score > 0) {
-        let amt = (score * scoreToZanyM).toFixed(4).toString();
-        try {
-          (async () => {
-            const result = await api.transact(
-              {
-                actions: [
-                  {
-                    account: 'metatoken.gm',
-                    name: 'transfer',
-                    authorization: [
-                      {
-                        actor: 'zanygumplays',
-                        permission: 'active'
-                      }
-                    ],
-                    data: {
-                      from: 'zanygumplays',
-                      to: userName,
-                      quantity: `${amt} ZANY`,
-                      memo: 'Thanks for Coming by'
+  }
+  userAddresses.forEach(userAddress => {
+    let userName = userAddress.replace(/\_/g, '.');
+    let score = Math.max(
+      usersData[userAddress]['high_score'],
+      usersData[userAddress]['score']
+    );
+    if (score > 0) {
+      let amt = (score * scoreToZanyM).toFixed(4).toString();
+      try {
+        (async () => {
+          const result = await api.transact(
+            {
+              actions: [
+                {
+                  account: 'metatoken.gm',
+                  name: 'transfer',
+                  authorization: [
+                    {
+                      actor: 'zanygumplays',
+                      permission: 'active'
                     }
+                  ],
+                  data: {
+                    from: 'zanygumplays',
+                    to: userName,
+                    quantity: `${amt} ZANY`,
+                    memo: 'Thanks for Coming by'
                   }
-                ]
-              },
-              {
-                blocksBehind: 3,
-                expireSeconds: 30
-              }
-            );
-            secMain.textContent += `\nRewarded ${userName} with ${amt} ZANY`;
-            console.log(result);
-          })();
-        } catch (error) {
-          if (!failedTrxList.includes(userAddress)) {
-            failedTrxList.push(userAddress);
-          }
-          console.log(`Caught Exception ${error}`);
-          if (error instanceof RpcError) {
-            console.log(JSON.stringify(error, null, 2));
-          }
+                }
+              ]
+            },
+            {
+              blocksBehind: 3,
+              expireSeconds: 30
+            }
+          );
+          secMain.textContent += `\r\nRewarded ${userName} with ${amt} ZANY`;
+          console.log(result);
+        })();
+      } catch (error) {
+        if (!failedTrxList.includes(userAddress)) {
+          failedTrxList.push(userAddress);
+        }
+        if (userAddresses.indexOf(userAddress) === userAddresses.length - 1) {
+          secMain.textContent += `\r\nFailed transactions for:`;
+          failedTrxList.forEach(user => {
+            secMain.textContent += `\r\n${user}`;
+          });
+        }
+        console.log(`Caught Exception ${error}`);
+        if (error instanceof RpcError) {
+          console.log(JSON.stringify(error, null, 2));
         }
       }
-    });
-    if (trials < 5) {
-      secMain.textContent += `\nWaiting for 10 minutes to cool down`;
-      setTimeout(() => {
-        if (failedTrxList.length !== 0) {
-          userAddresses = [];
-          userAddresses.push(...failedTrxList);
-          transactAllUsers();
-        }
-      }, 10 * 60 * 1000);
-      trials++;
-    } else {
-      secMain.textContent += `\nStopped transactions. Transactions failed for:\n`;
-      failedTrxList.forEach(user => {
-        secMain.textContent += `\n${user}`;
-      });
-      localStorage.setItem('FailedTrxList', JSON.stringify(failedTrxList));
     }
-  }
+  });
 }
 
 btnSend.addEventListener('click', transactAllUsers);
-btnRetry.addEventListener('click', transactAllUsers);
+btnRetry.addEventListener('click', () => {
+  userAddresses.push(...failedTrxList);
+  transactAllUsers();
+});
