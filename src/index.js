@@ -44,6 +44,13 @@ signInAnonymously(auth)
         console.log(error);
       }
     );
+    (async () => {
+      secMain.textContent += `${await rpc.get_currency_balance(
+        'metatoken.gm',
+        'zanygumplays',
+        'ZANY'
+      )}`;
+    })();
   })
   .catch(error => {
     console.log(error);
@@ -92,18 +99,14 @@ function transactAllUsers() {
             }
           );
           secMain.textContent += `\r\nRewarded ${userName} with ${amt} ZANY`;
+          showFailedTrxs();
           console.log(result);
         })();
       } catch (error) {
         if (!failedTrxList.includes(userAddress)) {
           failedTrxList.push(userAddress);
         }
-        if (userAddresses.indexOf(userAddress) === userAddresses.length - 1) {
-          secMain.textContent += `\r\nFailed transactions for:`;
-          failedTrxList.forEach(user => {
-            secMain.textContent += `\r\n${user}`;
-          });
-        }
+        showFailedTrxs();
         console.log(`Caught Exception ${error}`);
         if (error instanceof RpcError) {
           console.log(JSON.stringify(error, null, 2));
@@ -111,6 +114,15 @@ function transactAllUsers() {
       }
     }
   });
+}
+
+function showFailedTrxs() {
+  if (userAddresses.indexOf(userAddress) === userAddresses.length - 1) {
+    secMain.textContent += `\r\nFailed transactions for:`;
+    failedTrxList.forEach(user => {
+      secMain.textContent += `\r\n${user}`;
+    });
+  }
 }
 
 btnSend.addEventListener('click', transactAllUsers);
