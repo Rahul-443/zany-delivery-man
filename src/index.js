@@ -106,7 +106,7 @@ function transactAllUsers() {
         if (!failedTrxList.includes(userAddress)) {
           failedTrxList.push(userAddress);
         }
-        showFailedTrxs();
+        showFailedTrxs(userAddress);
         console.log(`Caught Exception ${error}`);
         if (error instanceof RpcError) {
           console.log(JSON.stringify(error, null, 2));
@@ -116,7 +116,7 @@ function transactAllUsers() {
   });
 }
 
-function showFailedTrxs() {
+function showFailedTrxs(userAddress) {
   if (userAddresses.indexOf(userAddress) === userAddresses.length - 1) {
     secMain.textContent += `\r\nFailed transactions for:`;
     failedTrxList.forEach(user => {
