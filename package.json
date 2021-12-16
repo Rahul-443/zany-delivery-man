@@ -27,9 +27,11 @@
     "workbox-webpack-plugin": "^6.4.2"
   },
   "dependencies": {
+    "@dfuse/client": "^0.3.21",
     "buffer": "^6.0.3",
     "eosjs": "^22.1.0",
     "firebase": "^9.6.0",
+    "prettyjson": "^1.2.1",
     "regenerator-runtime": "^0.13.9"
   }
 }
