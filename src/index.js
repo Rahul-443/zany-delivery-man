@@ -43,7 +43,7 @@ signInAnonymously(auth)
     console.log('Signed In');
     btnSend.disabled = false;
     onValue(
-      query(ref(database), orderByChild(`high_score`), startAt(1)),
+      query(ref(database, `users`), orderByChild(`high_score`), startAt(1)),
       snapshot => {
         if (snapshot !== null) {
           usersData = snapshot.val();
@@ -86,66 +86,70 @@ const customizedFetch = async (input, init) => {
 
 function main(userAddresses) {
   let i = 0;
+  let j = 0;
   const transactHandler = setInterval(() => {
     let userAddress = userAddresses[i];
-    i++;
-    let userName = userAddress.replace(/\_/g, '.');
-    let score = Math.max(
-      usersData[userAddress]['high_score'],
-      usersData[userAddress]['score']
-    );
-    let amt = (score * scoreToZanyM).toFixed(4).toString();
+    if (userAddress !== undefined) {
+      i++;
+      let userName = userAddress.replace(/\_/g, '.');
+      let score = Math.max(
+        usersData[userAddress]['high_score'],
+        usersData[userAddress]['score']
+      );
+      let amt = (score * scoreToZanyM).toFixed(4).toString();
 
-    try {
-      (async () => {
-        const transferAction = {
-          account: `metatoken.gm`,
-          name: `transfer`,
-          authorization: [
-            {
-              actor: `zanygumplays`,
-              permission: `active`
+      try {
+        (async () => {
+          const transferAction = {
+            account: `metatoken.gm`,
+            name: `transfer`,
+            authorization: [
+              {
+                actor: `zanygumplays`,
+                permission: `active`
+              }
+            ],
+            data: {
+              from: `zanygumplays`,
+              to: userName,
+              quantity: `${amt} ZANY`,
+              memo: `Thanks for Coming by`
             }
-          ],
-          data: {
-            from: `zanygumplays`,
-            to: userName,
-            quantity: `${amt} ZANY`,
-            memo: `Thanks for Coming by`
-          }
-        };
+          };
 
-        const result = await api.transact(
-          {
-            actions: [transferAction]
-          },
-          {
-            blocksBehind: 360,
-            expireSeconds: 3600
-          }
-        );
+          const result = await api.transact(
+            {
+              actions: [transferAction]
+            },
+            {
+              blocksBehind: 360,
+              expireSeconds: 3600
+            }
+          );
 
-        secMain.textContent += `\r\n${i}. Rewarded ${userName} with ${amt} ZANY`;
-        succededTrxList.push(userAddress);
-        console.log(result);
-        if (
-          i === userAddresses.length &&
-          succededTrxList.length === userAddresses.length
-        ) {
-          secMain.textContent += `\r\nAll Transactions successfully completed`;
-          clearInterval(transactHandler);
-        } else if (i === userAddresses.length) {
-          secMain.textContent += `\r\nSome Transactions couldn't be completed. Please Retry`;
-          clearInterval(transactHandler);
+          j++;
+          secMain.textContent += `\r\n${j}. Rewarded ${userName} with ${amt} ZANY`;
+          succededTrxList.push(userAddress);
+          console.log(result);
+          if (
+            j === userAddresses.length &&
+            succededTrxList.length === userAddresses.length
+          ) {
+            secMain.textContent += `\r\nAll Transactions successfully completed`;
+            clearInterval(transactHandler);
+          } else if (j === userAddresses.length) {
+            secMain.textContent += `\r\nSome Transactions couldn't be completed. Please Retry`;
+            clearInterval(transactHandler);
+          }
+
+          console.log(result);
+        })();
+      } catch (error) {
+        console.log(`Caught Exception ${error}`);
+        secMain.textContent;
+        if (error instanceof RpcError) {
+          console.log(JSON.stringify(error, null, 2));
         }
-
-        console.log(result);
-      })();
-    } catch (error) {
-      console.log(`Caught Exception ${error}`);
-      secMain.textContent;
-      if (error instanceof RpcError) {
-        console.log(JSON.stringify(error, null, 2));
       }
     }
   }, 500);
