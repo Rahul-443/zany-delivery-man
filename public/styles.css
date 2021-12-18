@@ -15,7 +15,19 @@ html {
 :root {
   /* colors */
   --white: #fefeff;
+  --black-1A: #1a1a1a;
   --color-btn: #ffedd2;
+
+  --pink-1: #fa3967;
+  --pink-2: #fb6185;
+  --pink-3: #fc88a4;
+  --pink-4: #fed7e1;
+  --orange-1: #fa9639;
+  --orange-2: #fbab61;
+  --orange-3: #fcc088;
+  --orange-4: #feead7;
+
+  --orange-D1: #e18733;
 
   /* linear gradients */
   --gradient-bg: linear-gradient(
@@ -29,7 +41,7 @@ html {
   /* fonts */
   --font-size-09: 0.9rem;
   --font-size-1: 1rem;
-  --font-size-2: 1.4rem;
+  --font-size-2: 1.1rem;
 
   --font-family-1: 'IBM Plex Sans', sans-serif;
 
@@ -58,16 +70,89 @@ body {
 }
 
 .section-main {
-  height: 80vh;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  height: 85vh;
   width: 90vw;
-  margin-bottom: 1.5rem;
-  padding: 2rem;
-  background-color: var(--white);
-  box-shadow: var(--shadow-1);
-  border-radius: var(--border-radius-2);
+  padding: 1rem;
+  font-size: var(--font-size-1);
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+#col-1 {
+  width: 30%;
+  row-gap: 2rem;
+}
+
+#col-2 {
+  width: 65%;
+  row-gap: 2rem;
+}
+
+.head {
+  width: 100%;
+  background-color: var(--orange-4);
+  border-top-left-radius: var(--border-radius-1);
+  border-top-right-radius: var(--border-radius-1);
+  padding: 0.5rem 1.5rem;
   font-size: var(--font-size-2);
-  white-space: pre;
+}
+
+.holder {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  height: 100%;
+  width: 100%;
+  padding: 0.5rem;
+  border-bottom-left-radius: var(--border-radius-1);
+  border-bottom-right-radius: var(--border-radius-1);
   overflow: auto;
+}
+
+.result-holder {
+  white-space: pre;
+  color: var(--black-1A);
+}
+
+.info {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--pink-2);
+  border-radius: var(--border-radius-1);
+  align-self: flex-start;
+}
+
+.recipients {
+  height: 100%;
+  width: 100%;
+  background-color: var(--white);
+  border-radius: var(--border-radius-1);
+  box-shadow: var(--shadow-1);
+}
+
+.recipient {
+  color: var(--orange-1);
+  padding: 0.5rem 1.5rem;
+  margin: 0.5rem;
+  border: 1px solid var(--orange-2);
+  border-radius: var(--border-radius-1);
+}
+
+.result {
+  height: 100%;
+  width: 100%;
+  background-color: var(--white);
+  border-radius: var(--border-radius-1);
+  box-shadow: var(--shadow-1);
 }
 
 .btn-group {

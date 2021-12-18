@@ -16,15 +16,31 @@
   </head>
   <body>
     <section class="section-center">
-      <div class="section-main"></div>
-      <div class="btn-group">
-        <button class="btn" id="send" disabled>
-          Reward <i class="fas fa-arrow-circle-right"></i>
-        </button>
-        <button class="btn" id="retry">
-          Retry <i class="fas fa-redo"></i>
-        </button>
-      </div>
+      <section class="section-main">
+        <div class="col" id="col-1">
+          <div class="info">
+            <p>Balance: <span id="balance">0.0000 ZANY</span></p>
+          </div>
+          <div class="col recipients">
+            <p class="head">Players</p>
+            <div class="holder recipients-holder"></div>
+          </div>
+        </div>
+        <div class="col" id="col-2">
+          <div class="col result">
+            <p class="head">Result</p>
+            <div class="holder result-holder"></div>
+          </div>
+          <div class="btn-group">
+            <button class="btn" id="send" disabled>
+              Reward <i class="fas fa-arrow-circle-right"></i>
+            </button>
+            <button class="btn" id="retry">
+              Retry <i class="fas fa-redo"></i>
+            </button>
+          </div>
+        </div>
+      </section>
     </section>
     <script src="./main.js"></script>
     <script

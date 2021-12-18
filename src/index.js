@@ -26,15 +26,21 @@ const rpc = new JsonRpc('https://wax.dfuse.eosnation.io', {
 });
 const api = new Api({ rpc, signatureProvider });
 
-const secMain = document.querySelector('.section-main');
+const balText = document.getElementById(`balance`);
+const recpHolder = document.querySelector(`.recipients-holder`);
+const resHolder = document.querySelector(`.result-holder`);
 const btnSend = document.getElementById('send');
 const btnRetry = document.getElementById('retry');
-let succededTrxList = [];
 
-const scoreToZanyM = 0.0001;
-let userAddresses = [];
 let usersData;
 let usersKeys;
+let userAddresses;
+let succededTrxList;
+const scoreToZanyM = 10;
+const acctName = `zanygumplays`;
+const contractName = `metatoken.gm`;
+const symbol = `ZANY`;
+const colorGreen1 = `#fb6185`;
 
 btnSend.disabled = true;
 
@@ -54,10 +60,10 @@ signInAnonymously(auth)
       }
     );
     (async () => {
-      secMain.textContent += `${await rpc.get_currency_balance(
-        'metatoken.gm',
-        'zanygumplays',
-        'ZANY'
+      balText.textContent = `${await rpc.get_currency_balance(
+        contractName,
+        acctName,
+        symbol
       )}`;
     })();
   })
@@ -70,104 +76,21 @@ const client = createDfuseClient({
   network: `wax.dfuse.eosnation.io`
 });
 
-const customizedFetch = async (input, init) => {
-  if (init === undefined) {
-    init = {};
-  }
-  if (init.headers === undefined) {
-    init.headers = {};
-  }
-  const apiTokenInfo = await client.getTokenInfo();
-  const headers = init.headers;
-  headers['Authorization'] = apiTokenInfo;
-  headers[`X-Eos-Push-Guarantee`] = `in-block`;
-  return input, init;
-};
-
-function main(userAddresses) {
-  let i = 0;
-  let j = 0;
-  const transactHandler = setInterval(() => {
-    let userAddress = userAddresses[i];
-    if (userAddress !== undefined) {
-      i++;
-      let userName = userAddress.replace(/\_/g, '.');
-      let score = Math.max(
-        usersData[userAddress]['high_score'],
-        usersData[userAddress]['score']
-      );
-      let amt = (score * scoreToZanyM).toFixed(4).toString();
-
-      try {
-        (async () => {
-          const transferAction = {
-            account: `metatoken.gm`,
-            name: `transfer`,
-            authorization: [
-              {
-                actor: `zanygumplays`,
-                permission: `active`
-              }
-            ],
-            data: {
-              from: `zanygumplays`,
-              to: userName,
-              quantity: `${amt} ZANY`,
-              memo: `Thanks for Coming by`
-            }
-          };
-
-          const result = await api.transact(
-            {
-              actions: [transferAction]
-            },
-            {
-              blocksBehind: 360,
-              expireSeconds: 3600
-            }
-          );
-
-          j++;
-          secMain.textContent += `\r\n${j}. Rewarded ${userName} with ${amt} ZANY`;
-          succededTrxList.push(userAddress);
-          console.log(result);
-          if (
-            j === userAddresses.length &&
-            succededTrxList.length === userAddresses.length
-          ) {
-            secMain.textContent += `\r\nAll Transactions successfully completed`;
-            clearInterval(transactHandler);
-          } else if (j === userAddresses.length) {
-            secMain.textContent += `\r\nSome Transactions couldn't be completed. Please Retry`;
-            clearInterval(transactHandler);
-          }
-
-          console.log(result);
-        })();
-      } catch (error) {
-        console.log(`Caught Exception ${error}`);
-        secMain.textContent;
-        if (error instanceof RpcError) {
-          console.log(JSON.stringify(error, null, 2));
-        }
-      }
-    }
-  }, 500);
-}
-
-addEventListener('unhandledrejection', promiseRejectionEvent => {
-  secMain.textContent += `\r\nFailed a transaction`;
-});
-
 btnSend.addEventListener('click', () => {
-  usersKeys = Object.keys(usersData);
-  secMain.textContent += `\r\n${usersKeys.length} users to be rewarded`;
-  usersKeys.forEach(userKey => {
-    secMain.textContent += `\r\n${userKey}`;
-  });
-  console.log(usersData);
-  userAddresses.push(...usersKeys);
-  main(userAddresses);
+  refreshArrays();
+  if (usersData !== null) {
+    usersKeys = Object.keys(usersData);
+    recpHolder.innerHTML = ``;
+    usersKeys.forEach(userKey => {
+      recpHolder.innerHTML += `<p class="recipient" id="recp-${getWamInDot(
+        userKey
+      )}">${getWamInDot(userKey)}</p>`;
+    });
+    userAddresses.push(...usersKeys);
+    main(userAddresses);
+  } else {
+    alert(`No player found to be rewarded!`);
+  }
 });
 
 btnRetry.addEventListener('click', () => {
@@ -185,3 +108,109 @@ btnRetry.addEventListener('click', () => {
   console.log(succededTrxList);
   main(userAddresses);
 });
+
+function main(userAddresses) {
+  let i = 0;
+  let j = 0;
+  const transactHandler = setInterval(() => {
+    let userAddress = userAddresses[i];
+    if (userAddress !== undefined) {
+      i++;
+      let userName = getWamInDot(userAddress);
+      let userZanyPtsHscore =
+        usersData[userAddress]['high_score'] /
+        usersData[userAddress][`time_taken_high_score`];
+      let userZanyPtsScore =
+        usersData[userAddress]['score'] /
+        usersData[userAddress][`time_taken_score`];
+      let zanyPts = Math.max(userZanyPtsHscore, userZanyPtsScore);
+      let amt = (zanyPts * scoreToZanyM).toFixed(4);
+
+      try {
+        (async () => {
+          const transferAction = {
+            account: contractName,
+            name: `transfer`,
+            authorization: [
+              {
+                actor: acctName,
+                permission: `active`
+              }
+            ],
+            data: {
+              from: acctName,
+              to: userName,
+              quantity: `${amt} ${symbol}`,
+              memo: `Thanks for Coming by`
+            }
+          };
+
+          const result = await api.transact(
+            {
+              actions: [transferAction]
+            },
+            {
+              blocksBehind: 360,
+              expireSeconds: 3600
+            }
+          );
+
+          document.getElementById(
+            `recp-${userName}`
+          ).style.borderColor = colorGreen1;
+          console.log(result);
+        })().then(() => {
+          j++;
+          succededTrxList.push(userAddress);
+          resHolder.textContent += `\r\n${j}. Rewarded ${userName} with ${amt} ZANY`;
+          if (
+            j === userAddresses.length &&
+            succededTrxList.length === userAddresses.length
+          ) {
+            resHolder.textContent += `\r\nAll Transactions successfully completed`;
+            clearInterval(transactHandler);
+          } else if (j === userAddresses.length) {
+            resHolder.textContent += `\r\nSome Transactions couldn't be completed. Please Retry`;
+            clearInterval(transactHandler);
+          }
+        });
+      } catch (error) {
+        console.log(`Caught Exception ${error}`);
+        resHolder.textContent;
+        if (error instanceof RpcError) {
+          console.log(JSON.stringify(error, null, 2));
+        }
+      }
+    }
+  }, 1000);
+}
+
+addEventListener('unhandledrejection', promiseRejectionEvent => {
+  resHolder.textContent += `\r\nFailed a transaction`;
+});
+
+function refreshArrays() {
+  usersKeys = [];
+  userAddresses = [];
+  succededTrxList = [];
+}
+
+function getWamInDot(userName) {
+  return userName.replace(/\_/g, `.`);
+}
+
+const customizedFetch = async (input, init) => {
+  if (init === undefined) {
+    init = {};
+  }
+  if (init.headers === undefined) {
+    init.headers = {};
+  }
+  const apiTokenInfo = await client.getTokenInfo();
+  const headers = init.headers;
+
+  headers['Authorization'] = `Bearer ${apiTokenInfo.token}`;
+  headers[`X-Eos-Push-Guarantee`] = `in-block`;
+
+  return input, init;
+};
