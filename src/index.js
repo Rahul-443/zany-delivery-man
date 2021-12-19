@@ -36,7 +36,7 @@ let usersData;
 let usersKeys;
 let userAddresses;
 let succededTrxList;
-const scoreToZanyM = 10;
+const scoreToZanyM = 0.1;
 const acctName = `zanygumplays`;
 const contractName = `metatoken.gm`;
 const symbol = `ZANY`;
@@ -49,7 +49,11 @@ signInAnonymously(auth)
     console.log('Signed In');
     btnSend.disabled = false;
     onValue(
-      query(ref(database, `users`), orderByChild(`high_score`), startAt(1)),
+      query(
+        ref(database, `leaderboard`),
+        orderByChild(`highScore`),
+        startAt(1)
+      ),
       snapshot => {
         if (snapshot !== null) {
           usersData = snapshot.val();
@@ -117,14 +121,9 @@ function main(userAddresses) {
     if (userAddress !== undefined) {
       i++;
       let userName = getWamInDot(userAddress);
-      let userZanyPtsHscore =
-        usersData[userAddress]['high_score'] /
-        usersData[userAddress][`time_taken_high_score`];
-      let userZanyPtsScore =
-        usersData[userAddress]['score'] /
-        usersData[userAddress][`time_taken_score`];
-      let zanyPts = Math.max(userZanyPtsHscore, userZanyPtsScore);
-      let amt = (zanyPts * scoreToZanyM).toFixed(4);
+      let userZanyPts = usersData[userAddress][`pts`];
+      let userScore = usersData[userAddress][`highScore`];
+      let amt = (userScore * userZanyPts * scoreToZanyM).toFixed(4);
 
       try {
         (async () => {
